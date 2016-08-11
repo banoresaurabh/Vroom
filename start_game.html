@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        
+		<style>
+            body{
+                font-size: 100%
+            }
+            
+            #lname{
+                font-size: 1.2em;
+            }
+            #name_form{
+                margin-left: 35%;
+                margin-top:2em;
+            }
+            @font-face{
+                font-family: satisfy;
+                src: url(fonts/Satisfy-Regular.ttf);
+            }
+            canvas{
+                border: 0.3em solid white;
+                margin-top: 2%;
+                margin-left: 13%;
+                background-image: url('images/road.gif');
+                background-size: cover;
+            }
+            #brand{
+                font-size: 10em;
+                margin-left: 37%;
+                margin-top: 15%;
+                font-family: satisfy;
+                color: darkcyan;
+            }
+            #foo{
+                font-size: 1.5em;
+                margin-left: 1em;
+            }
+            
+		</style>
+	</head>
+	<body style=" background-image:url('images/clouds.gif');">
+       
+            <h1 id="brand">Vroom</h1> 
+            <div id="name_form" id="name_f" style="display:block;">
+                   <!-- <label id="lname">Player name: &nbsp</label><input type="text" name="nop" id="name_of_player"> -->
+                    <button onclick="starter()" class="btn btn-primary" id="startt" style="margin-left:1em;margin-top:0.8em;" >Bring it on!</button>
+                     <button onclick="how_to()" class="btn btn-danger" id="how_to" style="margin-left:1.5em;margin-right:1.5em;margin-top:0.8em;" >How to play?</button>
+                    
+                <div id="hd" class="alert alert-info" style="display:none; margin-top:1em; font-size:1.4em;"><b>Billy</b> is drunk and he entered the wrong lane. Use the left and right arrow keys to save <b>Billy</b> from hitting other cars as long as you can!! Watch out, the other vehicles turn hostile as you move ahead :|</div>
+            </div>
+      
+        <footer id="foot" style="margin-top:23em">
+            <p id ="foo">Designed and Developed by: Saurabh Banore</p>
+        </footer>
+        <script>
+            var playerName;var mainCar;var bgMusic, y = 480, x = 400, mainCar, rate=40, vehicles = [], vehicle_speed = 10, veh1, veh2, veh3;
+            var hashLike = {
+                veh1 : 175,
+                veh2 : 138,
+                veh3 : 182
+            };
+            var mainCarStep = 9,minVeh = 1,maxVeh = 3,nameV = "images/veh",theScore,finalScore=1,theLevel,finalLevel = 1,theHighScore,finalHighScore,flag=0;
+            function starter(){
+                var brand = document.getElementById("brand");
+                brand.style.display="none";
+              /*  var lname = document.getElementById("lname");
+                lname.style.display="none";
+                var nameOP = document.getElementById("name_of_player");
+                nameOP.style.display="none";*/
+                var start = document.getElementById("startt");
+                start.style.display="none";
+                var how_to = document.getElementById("how_to");
+                how_to.style.display="none";
+                var hd = document.getElementById("hd");
+                hd.style.display="none";
+                var foot = document.getElementById("foot");
+                foot.style.display="none";
+                document.body.style.backgroundImage = "url('images/doodle1.jpg')";
+                drawFooter();
+                startGame();
+            }
+            
+            function drawFooter(){
+                var foot = document.createElement("footer");
+                foot.id = "foot";
+                document.getElementById("foot").innerHTML = "Designed and develloped by: Saurabh Banore" ;
+                foot.style.backgroundColor = "red";
+            }
+            
+            function how_to(){
+                    var how = document.getElementById("hd");
+                    how.style.display="block";
+            }
+            
+            function startGame(){
+                gameArea.start();
+                if(localStorage.highScore){
+                    finalHighScore = localStorage.highScore;
+                }else{
+                    localStorage.highScore = 0;
+                    finalHighScore = 0;
+                } 
+                bgMusic = new Audio("Music/holiday.mp3");
+                bgMusic.play();
+                crashMusic = new Audio("Music/crash.mp3");
+                mainCar = new component(75,107,"images/maincar.png",x,y,"image");
+                theScore = new component("30px","signify","white",50,50,"text");
+                theLevel = new component("30px","signify","white",800,50,"text");
+                theHighScore = new component("20px","signify","darkcyan",50,90,"text");
+                theGameOver = new component("100px","signify","white",270,300,"text")
+            }
+            
+            function component(width,height,color,x,y,type){
+                this.type = type;
+                if(this.type == "image"){
+                    this.image = new Image();
+                    this.image.src=color;
+                }
+                if(this.type == "text"){
+                    this.text="";
+                }
+                this.width = width;
+                this.height = height;
+                this.speedX = 0;
+                this.speedY = 0;
+                this.x = x;
+                this.y = y;
+                this.update= function(){
+                    this.ctx = gameArea.context;
+                    
+                    if(this.type == "image"){
+                        this.ctx.drawImage(this.image,this.x,this.y,this.width,this.height);
+                    }
+                    if(this.type == "text"){
+                        this.ctx.font = this.width + " " + this.height;
+                        this.ctx.fillStyle = color;
+                        this.ctx.fillText(this.text,this.x,this.y);
+                    }
+                }
+                this.crashWith = function(otherObj){
+                    var left = this.x;
+                    var right = (this.x + this.width);
+                    var top = this.y;
+                    var bottom = (this.y + this.height);
+                    var hisLeft = otherObj.x;
+                    var hisRight = (otherObj.x + otherObj.width);
+                    var hisTop = otherObj.y;
+                    var hisBottom = (otherObj.y + otherObj.height);
+                    var crash = true;
+                    if((hisTop > bottom) ||  (top > hisBottom) ||
+                        (right < hisLeft) ||
+                        (left > hisRight)) {
+                        crash = false;
+                       }
+                       return crash;
+                }
+            }
+            
+            var gameArea = {
+                canvas: document.createElement("canvas"),
+                start : function(){
+                    this.canvas.width = 1000;
+                    this.canvas.height = 600;
+                    this.frameNo = 0;
+                    this.context = this.canvas.getContext("2d");
+                    document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                    this.interval = setInterval(updateGameArea,20);
+                    window.addEventListener("keydown",function(e){
+                        gameArea.key = e.keyCode;
+                    })
+                    window.addEventListener("keyup",function(e){
+                        gameArea.key = false;
+                    })
+                },
+                clear : function(){
+                       this.context.clearRect(0,0,this.canvas.width,this.canvas.height);
+                },
+                stop: function(){
+                    clearInterval(this.interval);
+                }
+            }
+            
+            
+            function updateGameArea(){
+                var x;var y;
+                //vehicle_speed = Math.floor(score/500);
+                for(i = 0;i < vehicles.length; i+=1){
+                    if(mainCar.crashWith(vehicles[i])){
+                        bgMusic.pause();
+                        //crashMusic.play();
+                        if(finalScore > finalHighScore){
+                            theHighScore.text = "High Score: "+ finalHighScore;
+                            theHighScore.update();
+                            localStorage.highScore = finalScore;
+                        }
+                        theGameOver.text = "Game Over";
+                        theGameOver.update();
+                        gameArea.stop();
+                        
+                        finalScore =0;
+                        return;
+                    }
+                }
+                gameArea.clear();
+                mainCar.speedX = 0;
+                mainCar.speedY = 0;
+                if(gameArea.key && gameArea.key == 37 && mainCar.x>243){
+                    mainCar.x-=mainCarStep;
+                }
+                if(gameArea.key && gameArea.key == 39 && mainCar.x<675){
+                    mainCar.x+=mainCarStep;
+                }
+                
+                gameArea.frameNo+=1;
+                if(gameArea.frameNo == 1 || gameArea.frameNo % rate == 0){
+                    minX = 243;
+                    maxX = 675;
+                    x = Math.floor(Math.random()*(maxX-minX+1)+ minX);
+                    var n = Math.floor(Math.random()*(maxVeh-minVeh+1)+minVeh);
+                    nameV += n.toString();
+                    var ind = nameV.slice(7);
+                    nameV += ".png";
+                    vehicles.push(new component(75,hashLike[ind],nameV,x,-100,"image"));
+                    nameV = "images/veh";
+                }
+                
+                if(gameArea.frameNo % 10 == 0 ){
+                     finalScore += 1;
+                }
+                theScore.text = "Score: " + finalScore;
+                theScore.update();
+                
+                theHighScore.text = "High Score: "+ finalHighScore;
+                theHighScore.update();
+                
+                if(finalScore%100 == 0 && gameArea.frameNo % 10 == 0){
+                    updateGameLevel();
+                    finalLevel += 1;
+                }
+                theLevel.text = "Level: " + finalLevel;
+                theLevel.update();
+                for(i = 0; i < vehicles.length; i+=1){
+                      vehicles[i].y+=vehicle_speed;
+                      vehicles[i].update();
+                }
+                mainCar.update();
+            }
+            
+            function updateGameLevel(){
+                console.log(vehicle_speed);
+                vehicle_speed+=1;
+                rate -= 2;
+            }
+            
+        </script>
+	</body>
+</html>
